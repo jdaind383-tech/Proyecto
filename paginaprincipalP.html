@@ -1,0 +1,1294 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DEV Community (Español)</title>
+    <style>
+        :root {
+            --bg-body: #F5F5F5;
+            --bg-card: #FFFFFF;
+            --color-brand: #3B49DF;
+            --color-brand-hover: #2f3ab2;
+            --text-main: #242424;
+            --text-secondary: #575757;
+            --text-tertiary: #717171;
+            --border-color: #d6d6d7;
+            --radius: 0.375rem;
+            --header-height: 56px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            display: grid;
+            grid-template-columns: 72px 1fr;
+            min-height: 100vh;
+        }
+
+        a { text-decoration: none; color: inherit; cursor: pointer; }
+        ul { list-style: none; }
+        img { display: block; max-width: 100%; }
+        button { font-family: inherit; }
+
+        /* --- Sidebar Izquierdo (Rail) --- */
+        .rail-sidebar {
+            background-color: var(--bg-body);
+            border-right: 1px solid var(--border-color);
+            height: 100vh;
+            position: sticky;
+            top: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 10px 0;
+            overflow-y: auto;
+            overflow-x: visible; /* Permite que los popups se vean si usamos absolute, aunque usaremos fixed */
+            z-index: 1000;
+            scrollbar-width: none;
+        }
+        .rail-sidebar::-webkit-scrollbar { display: none; }
+
+        .community-item { position: relative; margin-bottom: 10px; }
+        
+        .community-link {
+            display: block; width: 40px; height: 40px; border-radius: 5px; overflow: hidden; transition: transform 0.1s;
+        }
+        .community-link:hover { transform: scale(1.05); box-shadow: 0 0 0 2px var(--color-brand); }
+        .community-link img { width: 100%; height: 100%; object-fit: cover; }
+        
+        .add-icon {
+            font-size: 24px; color: var(--text-secondary); display: flex; justify-content: center; align-items: center;
+            width: 40px; height: 40px; border-radius: 50%; background-color: #eef0f1; margin-top: 5px;
+        }
+
+        /* --- Pop-up de Comunidad --- */
+        .community-popup {
+            display: none;
+            position: fixed; /* Fijo a la ventana */
+            left: 70px; /* Un poco a la derecha del rail */
+            width: 300px;
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            padding: 16px;
+            z-index: 2000;
+        }
+
+        .popup-cover {
+            width: 100%;
+            height: 120px; /* Altura fija para la portada */
+            object-fit: cover;
+            border-radius: var(--radius);
+            margin-bottom: 12px;
+            background-color: #f0f0f0;
+        }
+
+        .popup-title { font-size: 1.25rem; font-weight: 700; margin: 0 0 8px 0; color: var(--text-main); }
+        
+        .btn-follow {
+            width: 100%;
+            padding: 8px;
+            background-color: var(--color-brand);
+            color: #fff;
+            border: none;
+            border-radius: var(--radius);
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 12px;
+            transition: background-color 0.2s;
+        }
+        .btn-follow:hover { background-color: var(--color-brand-hover); }
+
+        .popup-desc { font-size: 0.9rem; color: var(--text-secondary); line-height: 1.4; margin: 0; }
+
+        /* --- Layout General --- */
+        .main-layout { display: flex; flex-direction: column; width: 100%; }
+        
+        .top-header {
+            background-color: var(--bg-card); border-bottom: 1px solid var(--border-color); height: var(--header-height);
+            position: sticky; top: 0; z-index: 100; width: 100%; display: flex; justify-content: center;
+        }
+        .header-container { width: 100%; max-width: 1280px; display: flex; align-items: center; padding: 0 1rem; gap: 1rem; }
+        .logo { background-color: #000; color: #fff; padding: 8px 10px; border-radius: 4px; font-weight: 800; font-size: 1.2rem; }
+        .search-form { flex-grow: 1; max-width: 420px; margin: 0 auto; }
+        .search-input { width: 100%; padding: 8px 12px; border: 1px solid var(--border-color); border-radius: var(--radius); font-size: 1rem; }
+        .user-nav { display: flex; gap: 1rem; align-items: center; }
+        .btn { padding: 8px 16px; border-radius: var(--radius); font-weight: 500; border: none; cursor: pointer; font-size: 1rem; }
+        .btn-ghost:hover { background-color: #ebecfc; color: var(--color-brand); }
+        .btn-primary { background-color: #fff; color: var(--color-brand); border: 1px solid var(--color-brand); }
+        .btn-primary:hover { background-color: var(--color-brand); color: #fff; }
+
+        .content-grid {
+            display: grid; grid-template-columns: 240px 1fr 300px; gap: 1rem;
+            max-width: 1280px; width: 100%; margin: 0.4rem auto; padding: 0 1rem;
+ 
+        .nav-sidebar {
+            position: sticky; top: var(--header-height); max-height: calc(100vh - var(--header-height));
+            overflow-y: auto; padding-top: 0.25rem; padding-bottom: 2rem; scrollbar-width: thin;
+            position: relative; 
+        }
+        .sidebar-promo {
+            background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius);
+            padding: 1.25rem; margin-bottom: 1rem; display: flex; flex-direction: column; gap: 1rem;
+        }
+        .sidebar-promo h2 { font-size: 1.25rem; font-weight: 700; line-height: 1.2; }
+        .sidebar-promo p { color: var(--text-secondary); font-size: 1rem; line-height: 1.5; }
+        .promo-actions { display: flex; flex-direction: column; gap: 0.5rem; }
+        .btn-promo-create { width: 100%; color: var(--color-brand); border: 1px solid var(--color-brand); background: transparent; padding: 8px; font-weight: 600; cursor: pointer; }
+        .btn-promo-create:hover { background-color: var(--color-brand); color: #fff; }
+        .btn-promo-login { width: 100%; background: transparent; color: var(--text-main); padding: 8px; border: none; cursor: pointer; }
+        .btn-promo-login:hover { background-color: rgba(0,0,0,0.05); color: var(--color-brand); }
+
+        .nav-sidebar nav ul { display: flex; flex-direction: column; gap: 0.25rem; }
+        .nav-sidebar a { display: flex; align-items: center; padding: 8px; border-radius: var(--radius); color: var(--text-main); }
+        .nav-sidebar a:hover { background-color: #eef0f1; color: var(--color-brand); text-decoration: underline; }
+        .icon { margin-right: 8px; font-size: 1.25rem; width: 24px; text-align: center; display: inline-block; }
+
+        /* --- Feed --- */
+        .feed-header-tabs { display: flex; gap: 1rem; margin-bottom: 1rem; }
+        .feed-filter { padding: 8px 12px; border-radius: var(--radius); color: var(--text-secondary); }
+        .feed-filter.active { font-weight: bold; color: #000; }
+        
+        /* Post Card Styling */
+        .post-card {
+            background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius);
+            margin-bottom: 1rem; display: flex; flex-direction: column; overflow: hidden;
+        }
+        .post-cover { width: 100%; height: 273px; object-fit: cover; }
+        .post-content { padding: 20px; }
+        
+        .post-meta { display: flex; align-items: center; margin-bottom: 8px; }
+        .avatar { width: 32px; height: 32px; border-radius: 50%; margin-right: 8px; background-color: #ddd; object-fit: cover; }
+        .author-info { display: flex; flex-direction: column; line-height: 1.3; }
+        .author-name { font-weight: 500; font-size: 0.875rem; color: var(--text-main); }
+        .author-name:hover { background-color: #f6f6f6; border-radius: 4px; }
+        .post-date { font-size: 0.75rem; color: var(--text-secondary); }
+        .post-org { font-weight: 700; } 
+
+        .post-title { font-size: 1.875rem; font-weight: 700; margin-bottom: 8px; line-height: 1.25; }
+        .post-title a:hover { color: var(--color-brand); }
+
+        .tag-list { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+        .tag { color: var(--text-secondary); font-size: 0.875rem; padding: 4px 7px; border-radius: 4px; transition: all 0.2s; }
+        .tag:hover { background-color: rgba(0,0,0,0.05); box-shadow: inset 0 0 0 1px rgba(0,0,0,0.1); color: #000; }
+        .tag-prefix { opacity: 0.5; }
+
+        .post-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; }
+        .footer-left { display: flex; gap: 12px; align-items: center; }
+        
+        .interaction-btn {
+            display: flex; align-items: center; gap: 6px; padding: 4px 12px 4px 8px; border-radius: var(--radius);
+            font-size: 0.875rem; color: var(--text-main); background: transparent; border: none; cursor: pointer;
+        }
+        .interaction-btn:hover { background-color: #f5f5f5; }
+        
+        .footer-right { display: flex; align-items: center; gap: 8px; font-size: 0.75rem; color: var(--text-tertiary); }
+        
+        .btn-save-icon {
+            padding: 8px; background-color: #d6d6d7; border-radius: var(--radius); border: none; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; color: var(--text-main); transition: background-color 0.2s;
+        }
+        .btn-save-icon:hover { background-color: #bdbdbd; }
+        .btn-save-icon.saved { background-color: #3B49DF; color: white; }
+
+        /* Right Sidebar */
+        .listing-card { background-color: #F9F9F9; border: 1px solid var(--border-color); border-radius: var(--radius); padding: 1rem; margin-bottom: 1rem; }
+        .listing-item { padding: 1rem 0; border-bottom: 1px solid #e5e5e5; }
+        .listing-item:last-child { border-bottom: none; }
+        .listing-link { display: block; font-weight: 500; margin-bottom: 4px; }
+
+        /* SVG Icons */
+        .svg-icon { width: 24px; height: 24px; fill: currentColor; }
+        .svg-icon-sm { width: 18px; height: 18px; fill: currentColor; }
+
+        /* --- Reglas específicas SOLO para el bloque 'Etiquetas populares' --- */
+        #sidebar-nav-default-tags { transition: max-height 0.25s ease; }
+        #sidebar-nav-default-tags.collapsed { overflow-y: hidden; }
+        #sidebar-nav-default-tags .sidebar-nav-element { padding: 6px 0; }
+
+        @media (max-width: 1024px) {
+            .content-grid { grid-template-columns: 60px 1fr; }
+            .right-sidebar { display: none; }
+            .nav-sidebar span, .sidebar-promo, .nav-section-title { display: none; }
+            .icon { margin-right: 0; }
+        }
+        @media (max-width: 768px) {
+            body { grid-template-columns: 1fr; }
+            .rail-sidebar { display: none; }
+            .content-grid { grid-template-columns: 1fr; }
+            .nav-sidebar { display: none; }
+        }
+
+     
+        .crayons-layout__content > a.crayons-link--contentful {
+            display: block;
+            padding: 12px 14px;
+            border-bottom: 1px solid #e9e9e9;
+            color: var(--text-main);
+            text-decoration: none;
+            background: transparent;
+        }
+        .crayons-layout__content > a.crayons-link--contentful .crayons-link__secondary {
+            display: block;
+            margin-top: 6px;
+            color: var(--text-tertiary);
+            font-size: 0.9rem;
+        }
+        .crayons-layout__content > a.crayons-link--contentful:last-child { border-bottom: none; }
+
+        .right-sidebar .crayons-card.crayons-card--secondary.crayons-layout__content {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            padding: 0;
+            margin: 8px auto 16px;
+            box-shadow: 0 6px 18px rgba(15, 15, 15, 0.06);
+            max-width: 340px;
+            width: calc(100% - 16px);
+            overflow: hidden;
+        }
+        .right-sidebar .crayons-card.crayons-card--secondary.crayons-layout__content .crayons-card__header {
+            padding: 12px 14px;
+        }
+        .right-sidebar .crayons-layout__content > a.crayons-link--contentful {
+            padding-left: 14px; padding-right: 14px;
+        }
+
+        /* Slider vertical para nav-sidebar (solo visible en pantallas grandes) */
+        .nav-scroll-slider { position: absolute; right: 6px; top: 8px; height: calc(100% - 16px); width: 24px; display: flex; align-items: center; pointer-events: none; }
+        .nav-scroll-slider input[type="range"] { pointer-events: auto; -webkit-appearance: none; appearance: none; width: 100%; height: 24px; transform: rotate(-90deg); transform-origin: center; }
+        .nav-scroll-slider input[type="range"]::-webkit-slider-runnable-track { height: 6px; background: #eee; border-radius: 4px; }
+        .nav-scroll-slider input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; background: var(--color-brand); border-radius: 50%; margin-top: -4px; }
+        .nav-scroll-slider input[type="range"]:focus { outline: none; }
+        @media (max-width: 1024px) { .nav-scroll-slider { display: none; } }
+    </style>
+</head>
+<body>
+
+  
+    <aside class="rail-sidebar">
+        
+      
+        <article class="community-item">
+            <a href="#" class="community-link"><img src="https://media2.dev.to/dynamic/image/width=65,height=,fit=scale-down,gravity=auto,format=auto/https%3A%2F%2Fdev-to-uploads.s3.amazonaws.com%2Fuploads%2Farticles%2Fwalhydbusoe2o1pzxfwj.png" alt="Forem"></a>
+            <section class="community-popup">
+                <h3 class="popup-title">Forem Feed</h3>
+                <button class="btn-follow">Seguir</button>
+                <p class="popup-desc">Sigue nuevos Subforems para mejorar tu feed.</p>
+            </section>
+        </article>
+
+        
+        <article class="community-item">
+            <a href="#" class="community-link"><img src="https://media2.dev.to/dynamic/image/width=65,height=,fit=scale-down,gravity=auto,format=auto/https%3A%2F%2Fdev-to-uploads.s3.amazonaws.com%2Fuploads%2Farticles%2F8j7kvp660rqzt99zui8e.png" alt="DEV"></a>
+            <section class="community-popup">
+                <img src="https://media2.dev.to/dynamic/image/width=440,height=,fit=scale-down,gravity=auto,format=auto/https%3A%2F%2Fdev-to-uploads.s3.amazonaws.com%2Fuploads%2Farticles%2F3otvb2z646ytpt1hl2rv.jpg" alt="DEV Cover" class="popup-cover">
+                <h3 class="popup-title">DEV Community</h3>
+                <button class="btn-follow">Seguir</button>
+                <p class="popup-desc">Un espacio para que los programadores compartan, se mantengan al día y crezcan en sus carreras.</p>
+            </section>
+        </article>
+
+        
+        <article class="community-item">
+            <a href="#" class="community-link"><img src="https://media2.dev.to/dynamic/image/width=65,height=,fit=scale-down,gravity=auto,format=auto/https%3A%2F%2Fdev-to-uploads.s3.amazonaws.com%2Fuploads%2Farticles%2Fd89n749pwv3d05i93pfd.png" alt="Gamers"></a>
+            <section class="community-popup">
+                <img src="https://media2.dev.to/dynamic/image/width=440,height=,fit=scale-down,gravity=auto,format=auto/https%3A%2F%2Fdev-to-uploads.s3.amazonaws.com%2Fuploads%2Farticles%2Fgg6i5z7ureeu96cayz19.png" alt="Gamers Cover" class="popup-cover">
+                <h3 class="popup-title">Gamers Forem</h3>
+                <button class="btn-follow">Seguir</button>
+                <p class="popup-desc">Una comunidad inclusiva para entusiastas de los videojuegos.</p>
+            </section>
+        </article>
+
+        <article class="community-item">
+            <a href="#" class="community-link"><img src="https://media2.dev.to/dynamic/image/width=65,height=,fit=scale-down,gravity=auto,format=auto/https%3A%2F%2Fdev-to-uploads.s3.amazonaws.com%2Fuploads%2Farticles%2F9xjsbjb3ulcgpx932599.png" alt="Future"></a>
+            <section class="community-popup">
+                <img src="https://media2.dev.to/dynamic/image/width=440,height=,fit=scale-down,gravity=auto,format=auto/https%3A%2F%2Fdev-to-uploads.s3.amazonaws.com%2Fuploads%2Farticles%2Frnip9mvroe4n1spfm43q.png" alt="Future Cover" class="popup-cover">
+                <h3 class="popup-title">Future</h3>
+                <button class="btn-follow">Seguir</button>
+                <p class="popup-desc">Noticias y discusión sobre ciencia y tecnología como IA, VR y computación cuántica.</p>
+            </section>
+        </article>
+
+       
+        <article class="community-item">
+            <a href="#" class="community-link"><img src="https://media2.dev.to/dynamic/image/width=65,height=,fit=scale-down,gravity=auto,format=auto/https%3A%2F%2Fdev-to-uploads.s3.amazonaws.com%2Fuploads%2Farticles%2Fg8k8nlv7yl97085q8agp.png" alt="Open"></a>
+            <section class="community-popup">
+                <img src="https://media2.dev.to/dynamic/image/width=440,height=,fit=scale-down,gravity=auto,format=auto/https%3A%2F%2Fdev-to-uploads.s3.amazonaws.com%2Fuploads%2Farticles%2F9azopgwnjjpkgvtn5nux.png" alt="Open Cover" class="popup-cover">
+                <h3 class="popup-title">Open Forem</h3>
+                <button class="btn-follow">Seguir</button>
+                <p class="popup-desc">Espacio de discusión general para la comunidad Forem.</p>
+            </section>
+        </article>
+
+        
+        <article class="community-item">
+            <a href="#" class="community-link"><img src="https://media2.dev.to/dynamic/image/width=65,height=,fit=scale-down,gravity=auto,format=auto/https%3A%2F%2Fdev-to-uploads.s3.amazonaws.com%2Fuploads%2Farticles%2Feyc812o5ed0he648y218.png" alt="Music"></a>
+            <section class="community-popup">
+                <img src="https://media2.dev.to/dynamic/image/width=440,height=,fit=scale-down,gravity=auto,format=auto/https%3A%2F%2Fdev-to-uploads.s3.amazonaws.com%2Fuploads%2Farticles%2Fqji7l84bi520qypekh4t.png" alt="Music Cover" class="popup-cover">
+                <h3 class="popup-title">Music Forem</h3>
+                <button class="btn-follow">Seguir</button>
+                <p class="popup-desc">Desde composición hasta equipos y debates musicales.</p>
+            </section>
+        </article>
+
+     
+        <article class="community-item">
+            <a href="#" class="community-link"><img src="https://media2.dev.to/dynamic/image/width=65,height=,fit=scale-down,gravity=auto,format=auto/https%3A%2F%2Fdev-to-uploads.s3.amazonaws.com%2Fuploads%2Farticles%2Fzhktp1xvmpf29y860wd3.png" alt="Vibe"></a>
+            <section class="community-popup">
+                <img src="https://media2.dev.to/dynamic/image/width=440,height=,fit=scale-down,gravity=auto,format=auto/https%3A%2F%2Fdev-to-uploads.s3.amazonaws.com%2Fuploads%2Farticles%2Fetixkjcs50ddkp6wlv4p.png" alt="Vibe Cover" class="popup-cover">
+                <h3 class="popup-title">Vibe Coding Forem</h3>
+                <button class="btn-follow">Seguir</button>
+                <p class="popup-desc">Desarrollo de software con IA.</p>
+            </section>
+        </article>
+
+        
+        <article class="community-item">
+            <a href="#" class="community-link"><img src="https://media2.dev.to/dynamic/image/width=65,height=,fit=scale-down,gravity=auto,format=auto/https%3A%2F%2Fdev-to-uploads.s3.amazonaws.com%2Fuploads%2Farticles%2Fmkwem77uxpvir9vy9eeu.png" alt="Popcorn"></a>
+            <section class="community-popup">
+                <img src="https://media2.dev.to/dynamic/image/width=440,height=,fit=scale-down,gravity=auto,format=auto/https%3A%2F%2Fdev-to-uploads.s3.amazonaws.com%2Fuploads%2Farticles%2Fi8rwbqi6l4wln8kbx606.png" alt="Popcorn Cover" class="popup-cover">
+                <h3 class="popup-title">Popcorn Movies and TV</h3>
+                <button class="btn-follow">Seguir</button>
+                <p class="popup-desc">Cine, TV y crítica.</p>
+            </section>
+        </article>
+
+       
+        <article class="community-item">
+            <a href="#" class="community-link"><img src="https://media2.dev.to/dynamic/image/width=65,height=,fit=scale-down,gravity=auto,format=auto/https%3A%2F%2Fdev-to-uploads.s3.amazonaws.com%2Fuploads%2Farticles%2Finbbclsxtvxdfo0p2n66.png" alt="Dumb"></a>
+            <section class="community-popup">
+                <img src="https://media2.dev.to/dynamic/image/width=440,height=,fit=scale-down,gravity=auto,format=auto/https%3A%2F%2Fdev-to-uploads.s3.amazonaws.com%2Fuploads%2Farticles%2Fvb6sq9t5ehunzj4r4695.png" alt="Dumb Cover" class="popup-cover">
+                <h3 class="popup-title">DUMB DEV</h3>
+                <button class="btn-follow">Seguir</button>
+                <p class="popup-desc">Memes y humor de programación.</p>
+            </section>
+        </article>
+
+        
+        <article class="community-item">
+            <a href="#" class="community-link"><img src="https://media2.dev.to/dynamic/image/width=65,height=,fit=scale-down,gravity=auto,format=auto/https%3A%2F%2Fdev-to-uploads.s3.amazonaws.com%2Fuploads%2Farticles%2Ff83jl8yxfp6c5srbo02f.png" alt="Design"></a>
+            <section class="community-popup">
+                <img src="https://media2.dev.to/dynamic/image/width=440,height=,fit=scale-down,gravity=auto,format=auto/https%3A%2F%2Fdev-to-uploads.s3.amazonaws.com%2Fuploads%2Farticles%2Fujjn1ap9mpq8bwzn76em.png" alt="Design Cover" class="popup-cover">
+                <h3 class="popup-title">Design Community</h3>
+                <button class="btn-follow">Seguir</button>
+                <p class="popup-desc">Diseño web, gráfico y todo lo relacionado.</p>
+            </section>
+        </article>
+
+        <article class="community-item">
+            <a href="#" class="community-link"><img src="https://media2.dev.to/dynamic/image/width=65,height=,fit=scale-down,gravity=auto,format=auto/https%3A%2F%2Fdev-to-uploads.s3.amazonaws.com%2Fuploads%2Farticles%2Fnijx8yj8r5psetuqsw5z.png" alt="Golf"></a>
+            <section class="community-popup">
+                <img src="https://media2.dev.to/dynamic/image/width=440,height=,fit=scale-down,gravity=auto,format=auto/https%3A%2F%2Fdev-to-uploads.s3.amazonaws.com%2Fuploads%2Farticles%2Fp2khtue7prp0t5p0pouh.png" alt="Golf Cover" class="popup-cover">
+                <h3 class="popup-title">Golf Forem</h3>
+                <button class="btn-follow">Seguir</button>
+                <p class="popup-desc">Para golfistas y entusiastas.</p>
+            </section>
+        </article>
+
+   
+        <article class="community-item">
+            <a href="#" class="community-link"><img src="https://media2.dev.to/dynamic/image/width=65,height=,fit=scale-down,gravity=auto,format=auto/https%3A%2F%2Fdev-to-uploads.s3.amazonaws.com%2Fuploads%2Farticles%2Fdmn0m1ocwggrdvsma2cm.png" alt="Security"></a>
+            <section class="community-popup">
+                <img src="https://media2.dev.to/dynamic/image/width=440,height=,fit=scale-down,gravity=auto,format=auto/https%3A%2F%2Fdev-to-uploads.s3.amazonaws.com%2Fuploads%2Farticles%2Fhlhtmj657f6j9nh8mxwm.png" alt="Security Cover" class="popup-cover">
+                <h3 class="popup-title">Security Forem</h3>
+                <button class="btn-follow">Seguir</button>
+                <p class="popup-desc">Hacking ético, seguridad y desarrollo profesional.</p>
+            </section>
+        </article>
+
+        
+        <article class="community-item">
+            <a href="#" class="community-link"><img src="https://media2.dev.to/dynamic/image/width=65,height=,fit=scale-down,gravity=auto,format=auto/https%3A%2F%2Fdev-to-uploads.s3.amazonaws.com%2Fuploads%2Farticles%2Fkoohn8742pw7pbny3b32.png" alt="Scale"></a>
+            <section class="community-popup">
+                <img src="https://media2.dev.to/dynamic/image/width=440,height=,fit=scale-down,gravity=auto,format=auto/https%3A%2F%2Fdev-to-uploads.s3.amazonaws.com%2Fuploads%2Farticles%2Fiw9yu9dyt5nvlyis5v1d.png" alt="Scale Cover" class="popup-cover">
+                <h3 class="popup-title">Scale Forem</h3>
+                <button class="btn-follow">Seguir</button>
+                <p class="popup-desc">Software a gran escala, arquitectura y SRE.</p>
+            </section>
+        </article>
+
+       
+        <article class="community-item">
+            <a href="#" class="community-link"><img src="https://media2.dev.to/dynamic/image/width=65,height=,fit=scale-down,gravity=auto,format=auto/https%3A%2F%2Fdev-to-uploads.s3.amazonaws.com%2Fuploads%2Farticles%2Fupzbzgpb13b3e0dfxf51.png" alt="Core"></a>
+            <section class="community-popup">
+                <img src="https://media2.dev.to/dynamic/image/width=440,height=,fit=scale-down,gravity=auto,format=auto/https%3A%2F%2Fdev-to-uploads.s3.amazonaws.com%2Fuploads%2Farticles%2F7qi7bzwq9yok35no2owa.png" alt="Core Cover" class="popup-cover">
+                <h3 class="popup-title">Forem Core</h3>
+                <button class="btn-follow">Seguir</button>
+                <p class="popup-desc">Desarrollo del software open source Forem.</p>
+            </section>
+        </article>
+
+        
+        <article class="community-item">
+            <a href="#" class="community-link"><img src="https://media2.dev.to/dynamic/image/width=65,height=,fit=scale-down,gravity=auto,format=auto/https%3A%2F%2Fdev-to-uploads.s3.amazonaws.com%2Fuploads%2Farticles%2Fzbfoyqjor9xqe5xtqani.png" alt="Crypto"></a>
+            <section class="community-popup">
+                <img src="https://media2.dev.to/dynamic/image/width=440,height=,fit=scale-down,gravity=auto,format=auto/https%3A%2F%2Fdev-to-uploads.s3.amazonaws.com%2Fuploads%2Farticles%2Fg0rowhjp8x0bqzdsmq0w.png" alt="Crypto Cover" class="popup-cover">
+                <h3 class="popup-title">Crypto Forem</h3>
+                <button class="btn-follow">Seguir</button>
+                <p class="popup-desc">Bitcoin, protocolos, DeFi y NFTs.</p>
+            </section>
+        </article>
+
+        
+        <article class="community-item">
+            <a href="#" class="community-link"><img src="https://media2.dev.to/dynamic/image/width=65,height=,fit=scale-down,gravity=auto,format=auto/https%3A%2F%2Fdev-to-uploads.s3.amazonaws.com%2Fuploads%2Fsubforem_images%2Fmain_logo_5A1ZlPe69YTXNRsAxCXK.png" alt="Parenting"></a>
+            <section class="community-popup">
+                <img src="https://media2.dev.to/dynamic/image/width=440,height=,fit=scale-down,gravity=auto,format=auto/https%3A%2F%2Fdev-to-uploads.s3.amazonaws.com%2Fuploads%2Fsubforem_images%2Fsocial_card_rFghJWhbtJWReC430aDM.png" alt="Parenting Cover" class="popup-cover">
+                <h3 class="popup-title">Parenting</h3>
+                <button class="btn-follow">Seguir</button>
+                <p class="popup-desc">Compartiendo las alegrías y desafíos de ser padres.</p>
+            </section>
+        </article>
+
+   
+        <article class="community-item">
+            <a href="#" class="community-link"><img src="https://media2.dev.to/dynamic/image/width=65,height=,fit=scale-down,gravity=auto,format=auto/https%3A%2F%2Fdev-to-uploads.s3.amazonaws.com%2Fuploads%2Farticles%2F7mwsgj74kx4dn0fliwh7.png" alt="Maker"></a>
+            <section class="community-popup">
+                <img src="https://media2.dev.to/dynamic/image/width=440,height=,fit=scale-down,gravity=auto,format=auto/https%3A%2F%2Fdev-to-uploads.s3.amazonaws.com%2Fuploads%2Farticles%2F01bkopv3unqemfs036vr.png" alt="Maker Cover" class="popup-cover">
+                <h3 class="popup-title">Maker Forem</h3>
+                <button class="btn-follow">Seguir</button>
+                <p class="popup-desc">Makers, Arduino, Raspberry Pi e impresión 3D.</p>
+            </section>
+        </article>
+
+        <!-- HMPL -->
+        <article class="community-item">
+            <a href="#" class="community-link"><img src="https://media2.dev.to/dynamic/image/width=65,height=,fit=scale-down,gravity=auto,format=auto/https%3A%2F%2Fdev-to-uploads.s3.amazonaws.com%2Fuploads%2Farticles%2F3yl1tok1l7116unun3e9.png" alt="HMPL"></a>
+            <section class="community-popup">
+                <img src="https://media2.dev.to/dynamic/image/width=440,height=,fit=scale-down,gravity=auto,format=auto/https%3A%2F%2Fdev-to-uploads.s3.amazonaws.com%2Fuploads%2Farticles%2F5ccjfqjnhjn866cfyngt.png" alt="HMPL Cover" class="popup-cover">
+                <h3 class="popup-title">HMPL.js Forem</h3>
+                <button class="btn-follow">Seguir</button>
+                <p class="popup-desc">Apps web rápidas con HMPL.js.</p>
+            </section>
+        </article>
+        
+        <a href="#" class="add-icon" title="Añadir">+</a>
+    </aside>
+
+    <section class="main-layout">
+        <header class="top-header">
+            <nav class="header-container">
+                <a href="#" class="logo">DEV</a>
+                <form class="search-form" action="#">
+                    <input type="text" class="search-input" placeholder="Buscar...">
+                </form>
+                <section class="user-nav">
+                    <a href="log_in.html" class="btn btn-ghost">Iniciar sesión</a>
+                    <a href="log_in.html" class="btn btn-primary">Crear cuenta</a>
+                </section>
+            </nav>
+        </header>
+
+        <main class="content-grid">
+            
+            <aside class="nav-sidebar">
+                <article class="sidebar-promo">
+                    <h2>DEV Community es una comunidad de 3,591,283 desarrolladores increíbles</h2>
+                    <p>Somos un lugar donde los programadores comparten, se mantienen al día y hacen crecer sus carreras.</p>
+                        <footer class="promo-actions">
+                        <a href="log_in.html" class="btn btn-promo-create">Crear cuenta</a>
+                        <a href="log_in.html" class="btn btn-promo-login">Iniciar sesión</a>
+                    </footer>
+                </article>
+
+                <nav>
+                    <ul>
+                        <li><a href="#"><span class="icon">🏠</span> <span>Inicio</span></a></li>
+                        <li><a href="#"><span class="icon">➕</span> <span>DEV++</span></a></li>
+                        <li><a href="#"><span class="icon">🎙️</span> <span>Podcasts</span></a></li>
+                        <li><a href="#"><span class="icon">📹</span> <span>Videos</span></a></li>
+                        <li><a href="#"><span class="icon">🎓</span> <span>Rutas de Aprendizaje</span></a></li>
+                        <li><a href="#"><span class="icon">🏆</span> <span>Desafíos</span></a></li>
+                        <li><a href="#"><span class="icon">💡</span> <span>Ayuda</span></a></li>
+                        <li><a href="#"><span class="icon">❤️</span> <span>Anunciarse</span></a></li>
+                        <li><a href="#"><span class="icon">✨</span> <span>Escaparate</span></a></li>
+                        <li><a href="#"><span class="icon">😎</span> <span>Acerca de</span></a></li>
+                        <li><a href="#"><span class="icon">📯</span> <span>Contacto</span></a></li>
+                        <li><a href="#"><span class="icon">🐘</span> <span>Base de datos Postgres Gratis</span></a></li>
+                        <li><a href="#"><span class="icon">🤔</span> <span>Comparación de software</span></a></li>
+                        <li><a href="#"><span class="icon">🛍️</span> <span>Tienda Forem</span></a></li>
+                    </ul>
+                </nav>
+                <div class="nav-scroll-slider" aria-hidden="true">
+                    <input id="nav-scroll-range" type="range" min="0" value="0" step="1" aria-label="Desplazar menú lateral">
+                </div>
+                
+                <section style="margin-top: 20px; padding: 10px;">
+                    <h3 class="nav-section-title" style="font-size: 1rem; margin-bottom: 10px; font-weight: 700;">Otros</h3>
+                    <ul>
+                        <li><a href="#"><span class="icon">👍</span> <span>Código de Conducta</span></a></li>
+                        <li><a href="#"><span class="icon">🤓</span> <span>Política de Privacidad</span></a></li>
+                        <li><a href="#"><span class="icon">👀</span> <span>Términos de Uso</span></a></li>
+                    </ul>
+                </section>
+
+                <nav style="margin-top: 20px; display: flex; gap: 10px; padding-left: 8px; padding-bottom: 20px; align-items: center;">
+                    <a href="#" aria-label="Twitter">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="-50 -50 620 620" role="img" aria-labelledby="ajwdakkkhj8g5n0ocm62yhajyhb1wkwy" class="crayons-icon c-link__icon" width="24" height="24"><title id="ajwdakkkhj8g5n0ocm62yhajyhb1wkwy">Twitter</title>
+  <path d="M394.033.25h76.67L303.202 191.693l197.052 260.511h-154.29L225.118 294.205 86.844 452.204H10.127l179.16-204.77L.254.25H158.46l109.234 144.417zm-26.908 406.063h42.483L135.377 43.73h-45.59z" fill="#000"></path>
+</svg>
+                    </a>
+                    <a href="#" aria-label="Facebook">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" role="img" aria-labelledby="ab5yswlbb25dejcj0tf5vuv6yics878n" class="crayons-icon c-link__icon"><title id="ab5yswlbb25dejcj0tf5vuv6yics878n">Facebook</title>
+    <path d="M15.402 21v-6.966h2.333l.349-2.708h-2.682V9.598c0-.784.218-1.319 1.342-1.319h1.434V5.857a19.188 19.188 0 00-2.09-.107c-2.067 0-3.482 1.262-3.482 3.58v1.996h-2.338v2.708h2.338V21H4a1 1 0 01-1-1V4a1 1 0 011-1h16a1 1 0 011 1v16a1 1 0 01-1 1h-4.598z"></path>
+                                </ul>
+
+                            <!-- Comunidades del navbar reproducidas aquí -->
+                            <div class="left-communities" style="margin-top:18px;padding:12px;background:var(--bg-card,#fff);border-radius:8px;box-shadow:0 6px 18px rgba(15,15,15,0.04);">
+                                <h4 style="margin:0 0 8px;font-size:14px">Communities</h4>
+                                <ul style="list-style:none;padding:0;margin:0;display:grid;gap:6px">
+                                    <li><a href="/t/discuss" class="listing-link">#discuss</a></li>
+                                    <li><a href="/t/tutorial" class="listing-link">#tutorial</a></li>
+                                    <li><a href="/t/bitcoin" class="listing-link">#bitcoin</a></li>
+                                    <li><a href="/t/performance" class="listing-link">#performance</a></li>
+                                    <li><a href="/t/devops" class="listing-link">#devops</a></li>
+                                    <li><a href="/t/kubernetes" class="listing-link">#kubernetes</a></li>
+                                    <li><a href="/t/java" class="listing-link">#java</a></li>
+                                    <li><a href="/t/aws" class="listing-link">#aws</a></li>
+                                </ul>
+                            </div>
+                    </a>
+                    <a href="#" aria-label="GitHub">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" role="img" aria-labelledby="ag72jfq4wnsu6t3i11twgobfazihll3x" class="crayons-icon c-link__icon"><title id="ag72jfq4wnsu6t3i11twgobfazihll3x">Github</title>
+    <path d="M12 2C6.475 2 2 6.475 2 12a9.994 9.994 0 006.838 9.488c.5.087.687-.213.687-.476 0-.237-.013-1.024-.013-1.862-2.512.463-3.162-.612-3.362-1.175-.113-.288-.6-1.175-1.025-1.413-.35-.187-.85-.65-.013-.662.788-.013 1.35.725 1.538 1.025.9 1.512 2.338 1.087 2.912.825.088-.65.35-1.087.638-1.337-2.225-.25-4.55-1.113-4.55-4.938 0-1.088.387-1.987 1.025-2.688-.1-.25-.45-1.275.1-2.65 0 0 .837-.262 2.75 1.026a9.28 9.28 0 012.5-.338c.85 0 1.7.112 2.5.337 1.912-1.3 2.75-1.024 2.75-1.024.55 1.375.2 2.4.1 2.65.637.7 1.025 1.587 1.025 2.687 0 3.838-2.337 4.688-4.562 4.938.362.312.675.912.675 1.85 0 1.337-.013 2.412-.013 2.75 0 .262.188.574.688.474A10.016 10.016 0 0022 12c0-5.525-4.475-10-10-10z"></path>
+</svg>
+                    </a>
+                    <a href="#" aria-label="Instagram">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" role="img" aria-labelledby="a1rbynmgigerg0gbz19uw9t55m0lwoeo" class="crayons-icon c-link__icon"><title id="a1rbynmgigerg0gbz19uw9t55m0lwoeo">Instagram</title>
+    <path d="M12 2c2.717 0 3.056.01 4.122.06 1.065.05 1.79.217 2.428.465.66.254 1.216.598 1.772 1.153.509.5.902 1.105 1.153 1.772.247.637.415 1.363.465 2.428.047 1.066.06 1.405.06 4.122 0 2.717-.01 3.056-.06 4.122-.05 1.065-.218 1.79-.465 2.428a4.883 4.883 0 01-1.153 1.772c-.5.508-1.105.902-1.772 1.153-.637.247-1.363.415-2.428.465-1.066.047-1.405.06-4.122.06-2.717 0-3.056-.01-4.122-.06-1.065-.05-1.79-.218-2.428-.465a4.89 4.89 0 01-1.772-1.153 4.904 4.904 0 01-1.153-1.772c-.248-.637-.415-1.363-.465-2.428C2.013 15.056 2 14.717 2 12c0-2.717.01-3.056.06-4.122.05-1.066.217-1.79.465-2.428a4.88 4.88 0 011.153-1.772A4.897 4.897 0 015.45 2.525c.638-.248 1.362-.415 2.428-.465C8.944 2.013 9.283 2 12 2zm0 5a5 5 0 100 10 5 5 0 000-10zm6.5-.25a1.25 1.25 0 10-2.5 0 1.25 1.25 0 002.5 0zM12 9a3 3 0 110 6 3 3 0 010-6z"></path>
+</svg>
+                    </a>
+                    <a href="#" aria-label="Twitch">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" role="img" aria-labelledby="a3xrdzrcnahku04xxggv1np4ual0nfx6" class="crayons-icon c-link__icon"><title id="a3xrdzrcnahku04xxggv1np4ual0nfx6">Twitch</title>
+    <path d="M4.3 3H21v11.7l-4.7 4.7h-3.9l-2.5 2.4H7v-2.4H3V6.2L4.3 3zM5 17.4h4v2.4h.095l2.5-2.4h3.877L19 13.872V5H5v12.4zM15 8h2v4.7h-2V8zm0 0h2v4.7h-2V8zm-5 0h2v4.7h-2V8z"></path>
+</svg>
+                    </a>
+                    <a href="#" aria-label="Mastodon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" role="img" aria-labelledby="alpboex0no28znw540ev6oldddjft60f" class="crayons-icon c-link__icon"><title id="alpboex0no28znw540ev6oldddjft60f">Mastodon</title>
+    <path d="M21.258 13.99c-.274 1.41-2.456 2.955-4.962 3.254-1.306.156-2.593.3-3.965.236-2.243-.103-4.014-.535-4.014-.535 0 .218.014.426.04.62.292 2.215 2.196 2.347 4 2.41 1.82.062 3.44-.45 3.44-.45l.076 1.646s-1.274.684-3.542.81c-1.25.068-2.803-.032-4.612-.51-3.923-1.039-4.598-5.22-4.701-9.464-.031-1.26-.012-2.447-.012-3.44 0-4.34 2.843-5.611 2.843-5.611 1.433-.658 3.892-.935 6.45-.956h.062c2.557.02 5.018.298 6.451.956 0 0 2.843 1.272 2.843 5.61 0 0 .036 3.201-.397 5.424zm-2.956-5.087c0-1.074-.273-1.927-.822-2.558-.567-.631-1.308-.955-2.229-.955-1.065 0-1.871.41-2.405 1.228l-.518.87-.519-.87C11.276 5.8 10.47 5.39 9.405 5.39c-.921 0-1.663.324-2.229.955-.549.631-.822 1.484-.822 2.558v5.253h2.081V9.057c0-1.075.452-1.62 1.357-1.62 1 0 1.501.647 1.501 1.927v2.79h2.07v-2.79c0-1.28.5-1.927 1.5-1.927.905 0 1.358.545 1.358 1.62v5.1h2.08V8.902l.001.001z"></path>
+</svg>
+                    </a>
+                    <a href="#" aria-label="Bluesky">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -3.268 64 68.414" width="24" height="24" role="img" aria-labelledby="a3u87gk0xa5yuprfzvlcqkf2ittwa6gu" class="crayons-icon c-link__icon"><title id="a3u87gk0xa5yuprfzvlcqkf2ittwa6gu">Bluesky</title><path fill="#0085ff" d="M13.873 3.805C21.21 9.332 29.103 20.537 32 26.55v15.882c0-.338-.13.044-.41.867-1.512 4.456-7.418 21.847-20.923 7.944-7.111-7.32-3.819-14.64 9.125-16.85-7.405 1.264-15.73-.825-18.014-9.015C1.12 23.022 0 8.51 0 6.55 0-3.268 8.579-.182 13.873 3.805zm36.254 0C42.79 9.332 34.897 20.537 32 26.55v15.882c0-.338.13.044.41.867 1.512 4.456 7.418 21.847 20.923 7.944 7.111-7.32 3.819-14.64-9.125-16.85 7.405 1.264 15.73-.825 18.014-9.015C62.88 23.022 64 8.51 64 6.55c0-9.818-8.578-6.732-13.873-2.745z"></path></svg>
+                    </a>
+                                </nav>
+                                <nav class="mb-6" aria-label="Secondary sidebar nav" style="margin-top:12px;">
+            <h3 class="crayons-subtitle-3 p-2">Etiquetas populares</h3>
+            <div id="sidebar-nav-default-tags" class="overflow-y-auto" style="max-height: 42vh; padding-right: 8px;">
+                    <div class="sidebar-nav-element" id="default-sidebar-element-webdev">
+                        <a class="c-link c-link--block" href="/t/webdev">
+                            #webdev
+                        </a>
+                    </div>
+                    <div class="sidebar-nav-element" id="default-sidebar-element-ai">
+                        <a class="c-link c-link--block" href="/t/ai">
+                            #ai
+                        </a>
+                    </div>
+                    <div class="sidebar-nav-element" id="default-sidebar-element-programming">
+                        <a class="c-link c-link--block" href="/t/programming">
+                            #programming
+                        </a>
+                    </div>
+                    <div class="sidebar-nav-element" id="default-sidebar-element-blockchain">
+                        <a class="c-link c-link--block" href="/t/blockchain">
+                            #blockchain
+                        </a>
+                    </div>
+                    <div class="sidebar-nav-element" id="default-sidebar-element-productivity">
+                        <a class="c-link c-link--block" href="/t/productivity">
+                            #productivity
+                        </a>
+                    </div>
+                    <div class="sidebar-nav-element" id="default-sidebar-element-architecture">
+                        <a class="c-link c-link--block" href="/t/architecture">
+                            #architecture
+                        </a>
+                    </div>
+                    <div class="sidebar-nav-element" id="default-sidebar-element-javascript">
+                        <a class="c-link c-link--block" href="/t/javascript">
+                            #javascript
+                        </a>
+                    </div>
+                    <div class="sidebar-nav-element" id="default-sidebar-element-cloud">
+                        <a class="c-link c-link--block" href="/t/cloud">
+                            #cloud
+                        </a>
+                    </div>
+                    <div class="sidebar-nav-element" id="default-sidebar-element-web3">
+                        <a class="c-link c-link--block" href="/t/web3">
+                            #web3
+                        </a>
+                    </div>
+                    <div class="sidebar-nav-element" id="default-sidebar-element-career">
+                        <a class="c-link c-link--block" href="/t/career">
+                            #career
+                        </a>
+                    </div>
+                    <div class="sidebar-nav-element" id="default-sidebar-element-beginners">
+                        <a class="c-link c-link--block" href="/t/beginners">
+                            #beginners
+                        </a>
+                    </div>
+                    <div class="sidebar-nav-element" id="default-sidebar-element-python">
+                        <a class="c-link c-link--block" href="/t/python">
+                            #python
+                        </a>
+                    </div>
+                    <div class="sidebar-nav-element" id="default-sidebar-element-security">
+                        <a class="c-link c-link--block" href="/t/security">
+                            #security
+                        </a>
+                    </div>
+                    <div class="sidebar-nav-element" id="default-sidebar-element-tutorial">
+                        <a class="c-link c-link--block" href="/t/tutorial">
+                            #tutorial
+                        </a>
+                    </div>
+                    <div class="sidebar-nav-element" id="default-sidebar-element-bitcoin">
+                        <a class="c-link c-link--block" href="/t/bitcoin">
+                            #bitcoin
+                        </a>
+                    </div>
+                    <div class="sidebar-nav-element" id="default-sidebar-element-performance">
+                        <a class="c-link c-link--block" href="/t/performance">
+                            #performance
+                        </a>
+                    </div>
+                    <div class="sidebar-nav-element" id="default-sidebar-element-discuss">
+                        <a class="c-link c-link--block" href="/t/discuss">
+                            #discuss
+                        </a>
+                    </div>
+                    <div class="sidebar-nav-element" id="default-sidebar-element-devops">
+                        <a class="c-link c-link--block" href="/t/devops">
+                            #devops
+                        </a>
+                    </div>
+                    <div class="sidebar-nav-element" id="default-sidebar-element-kubernetes">
+                        <a class="c-link c-link--block" href="/t/kubernetes">
+                            #kubernetes
+                        </a>
+                    </div>
+                    <div class="sidebar-nav-element" id="default-sidebar-element-java">
+                        <a class="c-link c-link--block" href="/t/java">
+                            #java
+                        </a>
+                    </div>
+                    <div class="sidebar-nav-element" id="default-sidebar-element-aws">
+                        <a class="c-link c-link--block" href="/t/aws">
+                            #aws
+                        </a>
+                    </div>
+                    <div class="sidebar-nav-element" id="default-sidebar-element-react">
+                        <a class="c-link c-link--block" href="/t/react">
+                            #react
+                        </a>
+                    </div>
+                    <div class="sidebar-nav-element" id="default-sidebar-element-opensource">
+                        <a class="c-link c-link--block" href="/t/opensource">
+                            #opensource
+                        </a>
+                    </div>
+                    <div class="sidebar-nav-element" id="default-sidebar-element-design">
+                        <a class="c-link c-link--block" href="/t/design">
+                            #design
+                        </a>
+                    </div>
+                    <div class="sidebar-nav-element" id="default-sidebar-element-science">
+                        <a class="c-link c-link--block" href="/t/science">
+                            #science
+                        </a>
+                    </div>
+                    <div class="sidebar-nav-element" id="default-sidebar-element-database">
+                        <a class="c-link c-link--block" href="/t/database">
+                            #database
+                        </a>
+                    </div>
+                    <div class="sidebar-nav-element" id="default-sidebar-element-azure">
+                        <a class="c-link c-link--block" href="/t/azure">
+                            #azure
+                        </a>
+                    </div>
+                    <div class="sidebar-nav-element" id="default-sidebar-element-machinelearning">
+                        <a class="c-link c-link--block" href="/t/machinelearning">
+                            #machinelearning
+                        </a>
+                    </div>
+                    <div class="sidebar-nav-element" id="default-sidebar-element-learning">
+                        <a class="c-link c-link--block" href="/t/learning">
+                            #learning
+                        </a>
+                    </div>
+                    <div class="sidebar-nav-element" id="default-sidebar-element-api">
+                        <a class="c-link c-link--block" href="/t/api">
+                            #api
+                        </a>
+                    </div>
+            </div>
+        </nav>
+
+        <div class="crayons-card crayons-card--secondary crayons-bb bb-placement js-billboard" style="margin-top:12px;">
+            <p style="font-weight: bold; margin: 12px; margin-bottom: 10px;">
+                💎 DEV Diamond Sponsors
+            </p>
+            <p style="font-size: 0.8em; margin: 12px; margin-bottom: 20px;">
+                Thank you to our Diamond Sponsors for supporting the DEV Community
+            </p>
+        
+            <div style="text-align: center;">
+                <div style="display: inline-block; max-width: 100%; font-size: 0.8em; font-style: italic; text-align: left; padding: 10px; margin: 12px; background: #ffffff; border-radius: 5px; color: #404040;">
+                    <a href="https://aistudio.google.com/?utm_source=partner&amp;utm_medium=partner&amp;utm_campaign=FY25-Global-DEVpartnership-sponsorship-AIS&amp;utm_content=-&amp;utm_term=-&amp;bb=228024" target="_blank" rel="noopener noreferrer">
+                        <img src="https://media2.dev.to/dynamic/image/width=880%2Cheight=%2Cfit=scale-down%2Cgravity=auto%2Cformat=auto/https%3A%2F%2Fdev-to-uploads.s3.amazonaws.com%2Fuploads%2Farticles%2Fxjlyhbdqehj3akhz166w.png" alt="Google AI - Official AI Model and Platform Partner" style="display: block; background: #ffffff; margin-bottom: 0; width: 100%; height: auto; padding: 10px;" loading="lazy" width="2048" height="472">
+                    </a>
+                    <p style="text-align: center;">Google AI is the official AI Model and Platform Partner of DEV</p>
+                </div>
+
+                <div style="display: inline-block; max-width: 100%; font-size: 0.8em; font-style: italic; text-align: left; padding: 10px; margin: 12px; background: #ffffff; border-radius: 5px; color: #404040;">
+                    <a href="https://neon.tech/?ref=devto&amp;bb=228024" target="_blank" rel="noopener noreferrer">
+                        <img src="https://media2.dev.to/dynamic/image/width=880%2Cheight=%2Cfit=scale-down%2Cgravity=auto%2Cformat=auto/https%3A%2F%2Fdev-to-uploads.s3.amazonaws.com%2Fuploads%2Farticles%2Fbnl88cil6afxzmgwrgtt.png" alt="Neon - Official Database Partner" style="display: block; background: #ffffff; margin-bottom: 0; width: 100%; height: auto; padding: 10px;" loading="lazy" width="2286" height="596">
+                    </a>
+                    <p style="text-align: center;">Neon is the official database partner of DEV</p>
+                </div>
+        
+                <div style="display: inline-block; max-width: 100%; font-size: 0.8em; font-style: italic; text-align: left; padding: 10px; margin: 12px; background: #ffffff; border-radius: 5px; color: #404040;">
+                    <a href="https://www.algolia.com/developers/?utm_source=devto&amp;utm_medium=referral&amp;bb=228024" target="_blank" rel="noopener noreferrer">
+                        <img src="https://media2.dev.to/dynamic/image/width=880%2Cheight=%2Cfit=scale-down%2Cgravity=auto%2Cformat=auto/https%3A%2F%2Fdev-to-uploads.s3.amazonaws.com%2Fuploads%2Farticles%2Fv30ephnolfvnlwgwm0yz.png" alt="Algolia - Official Search Partner" style="display: block; background: #ffffff; padding: 11px; margin-bottom: 0; width: 100%; height: auto;" loading="lazy" width="2286" height="596">
+                    </a>
+                    <p style="text-align: center;">Algolia is the official search partner of DEV</p>
+                </div>
+            </div>
+        </div>
+            </aside>
+
+            <section class="feed">
+                <header class="feed-header-tabs">
+                    <a href="#" class="feed-filter active">Relevante</a>
+                    <a href="#" class="feed-filter">Más reciente</a>
+                    <a href="#" class="feed-filter">Top</a>
+                </header>
+
+                <!-- Post 1: Featured -->
+                <article class="post-card">
+                    <img src="https://media2.dev.to/dynamic/image/width=1000,height=420,fit=cover,gravity=auto,format=auto/https%3A%2F%2Fdev-to-uploads.s3.amazonaws.com%2Fuploads%2Farticles%2Fdr0yg0h4t43qil43li2l.png" alt="Cover" class="post-cover">
+                    <section class="post-content">
+                        <header class="post-meta">
+                            <img src="https://media2.dev.to/dynamic/image/width=90,height=90,fit=cover,gravity=auto,format=auto/https%3A%2F%2Fdev-to-uploads.s3.amazonaws.com%2Fuploads%2Forganization%2Fprofile_image%2F1%2Fd908a186-5651-4a5a-9f76-15200bc6801f.jpg" alt="Avatar" class="avatar">
+                            <address class="author-info" style="font-style: normal;">
+                                <div class="author-row" style="display:flex; align-items:center; gap:4px;">
+                                    <span class="author-name">Jess Lee</span>
+                                    <span class="post-org">para The DEV Team</span>
+                                </div>
+                                <time class="post-date">19 Nov</time>
+                            </address>
+                        </header>
+                        <h2 class="post-title"><a href="#">¡Únete al desafío de IA para apps multiplataforma: $3,000 en premios!</a></h2>
+                        <ul class="tag-list">
+                            <li><a href="#" class="tag"><span class="tag-prefix">#</span>devchallenge</a></li>
+                            <li><a href="#" class="tag"><span class="tag-prefix">#</span>unoplatformchallenge</a></li>
+                            <li><a href="#" class="tag"><span class="tag-prefix">#</span>dotnet</a></li>
+                            <li><a href="#" class="tag"><span class="tag-prefix">#</span>ai</a></li>
+                        </ul>
+                        <footer class="post-footer">
+                            <div class="footer-left">
+                                <button class="interaction-btn">
+                                    <span>❤️🦄🔥</span>
+                                    <span>130 reacciones</span>
+                                </button>
+                                <button class="interaction-btn">
+                                    <svg class="svg-icon-sm" viewBox="0 0 24 24" role="img" xmlns="http://www.w3.org/2000/svg"><path d="M10.5 5h3a6 6 0 110 12v2.625c-3.75-1.5-9-3.75-9-8.625a6 6 0 016-6zM12 15.5h1.5a4.501 4.501 0 001.722-8.657A4.5 4.5 0 0013.5 6.5h-3A4.5 4.5 0 006 11c0 2.707 1.846 4.475 6 6.36V15.5z"></path></svg>
+                                    <span>13 comentarios</span>
+                                </button>
+                            </div>
+                            <div class="footer-right">
+                                <span>7 min de lectura</span>
+                                <button class="btn-save-icon">
+                                    <svg class="svg-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.75 4.5h10.5a.75.75 0 01.75.75v14.357a.375.375 0 01-.575.318L12 16.523l-5.426 3.401A.375.375 0 016 19.607V5.25a.75.75 0 01.75-.75zM16.5 6h-9v11.574l4.5-2.82 4.5 2.82V6z"></path></svg>
+                                </button>
+                            </div>
+                        </footer>
+                    </section>
+                </article>
+
+                <!-- Post 2: Ribhararnus -->
+                <article class="post-card">
+                    <section class="post-content">
+                        <header class="post-meta">
+                            <img src="https://media2.dev.to/dynamic/image/width=90,height=90,fit=cover,gravity=auto,format=auto/https%3A%2F%2Fdev-to-uploads.s3.amazonaws.com%2Fuploads%2Fuser%2Fprofile_image%2F35796%2F6a2346f6-3bbd-4389-8e16-bd907942f32b.jpeg" alt="Avatar" class="avatar">
+                            <address class="author-info" style="font-style: normal;">
+                                <span class="author-name">Ribhararnus Pracutian</span>
+                                <time class="post-date">18 Nov</time>
+                            </address>
+                        </header>
+                        <h2 class="post-title"><a href="#">Construye tu propio estado atómico mágico</a></h2>
+                        <ul class="tag-list">
+                            <li><a href="#" class="tag"><span class="tag-prefix">#</span>javascript</a></li>
+                            <li><a href="#" class="tag"><span class="tag-prefix">#</span>react</a></li>
+                        </ul>
+                        <footer class="post-footer">
+                            <div class="footer-left">
+                                <button class="interaction-btn"><span>🔥🙌</span> <span>11 reacciones</span></button>
+                                <button class="interaction-btn">
+                                    <svg class="svg-icon-sm" viewBox="0 0 24 24" role="img" xmlns="http://www.w3.org/2000/svg"><path d="M10.5 5h3a6 6 0 110 12v2.625c-3.75-1.5-9-3.75-9-8.625a6 6 0 016-6zM12 15.5h1.5a4.501 4.501 0 001.722-8.657A4.5 4.5 0 0013.5 6.5h-3A4.5 4.5 0 006 11c0 2.707 1.846 4.475 6 6.36V15.5z"></path></svg>
+                                    <span>1 comentario</span>
+                                </button>
+                            </div>
+                            <div class="footer-right">
+                                <span>5 min de lectura</span>
+                                <button class="btn-save-icon">
+                                    <svg class="svg-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.75 4.5h10.5a.75.75 0 01.75.75v14.357a.375.375 0 01-.575.318L12 16.523l-5.426 3.401A.375.375 0 016 19.607V5.25a.75.75 0 01.75-.75zM16.5 6h-9v11.574l4.5-2.82 4.5 2.82V6z"></path></svg>
+                                </button>
+                            </div>
+                        </footer>
+                    </section>
+                </article>
+
+        
+                <article class="post-card">
+                    <img src="https://media2.dev.to/dynamic/image/width=1000,height=420,fit=cover,gravity=auto,format=auto/https%3A%2F%2Fdev-to-uploads.s3.amazonaws.com%2Fuploads%2Farticles%2Fxnbrmr9csadt3drdnmy3.jpg" alt="Cover CSS" class="post-cover">
+                    <section class="post-content">
+                        <header class="post-meta">
+                            <img src="https://media2.dev.to/dynamic/image/width=90,height=90,fit=cover,gravity=auto,format=auto/https%3A%2F%2Fdev-to-uploads.s3.amazonaws.com%2Fuploads%2Fuser%2Fprofile_image%2F3264351%2F2030f39b-20fb-4bf5-bb85-7055b8dbe034.jpg" alt="Avatar Elena" class="avatar">
+                            <address class="author-info" style="font-style: normal;">
+                                <span class="author-name">Elena</span>
+                                <time class="post-date">20 Nov</time>
+                            </address>
+                        </header>
+                        <h2 class="post-title"><a href="#">¡Domina CSS Grid en 10 minutos! Guía visual 🎨</a></h2>
+                        <ul class="tag-list">
+                            <li><a href="#" class="tag"><span class="tag-prefix">#</span>css</a></li>
+                            <li><a href="#" class="tag"><span class="tag-prefix">#</span>webdev</a></li>
+                        </ul>
+                        <footer class="post-footer">
+                            <div class="footer-left">
+                                <button class="interaction-btn"><span>💖🔥</span> <span>142 reacciones</span></button>
+                                <button class="interaction-btn">
+                                    <svg class="svg-icon-sm" viewBox="0 0 24 24" role="img" xmlns="http://www.w3.org/2000/svg"><path d="M10.5 5h3a6 6 0 110 12v2.625c-3.75-1.5-9-3.75-9-8.625a6 6 0 016-6zM12 15.5h1.5a4.501 4.501 0 001.722-8.657A4.5 4.5 0 0013.5 6.5h-3A4.5 4.5 0 006 11c0 2.707 1.846 4.475 6 6.36V15.5z"></path></svg>
+                                    <span>23 comentarios</span>
+                                </button>
+                            </div>
+                            <div class="footer-right">
+                                <span>10 min de lectura</span>
+                                <button class="btn-save-icon">
+                                    <svg class="svg-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.75 4.5h10.5a.75.75 0 01.75.75v14.357a.375.375 0 01-.575.318L12 16.523l-5.426 3.401A.375.375 0 016 19.607V5.25a.75.75 0 01.75-.75zM16.5 6h-9v11.574l4.5-2.82 4.5 2.82V6z"></path></svg>
+                                </button>
+                            </div>
+                        </footer>
+                    </section>
+                </article>
+
+                <!-- Post 4: Ximenita -->
+                <article class="post-card">
+                    <section class="post-content">
+                        <header class="post-meta">
+                            <img src="https://media2.dev.to/dynamic/image/width=90,height=90,fit=cover,gravity=auto,format=auto/https%3A%2F%2Fdev-to-uploads.s3.amazonaws.com%2Fuploads%2Fuser%2Fprofile_image%2F1467610%2Fe0d900af-ebeb-4391-871b-59adeea29b76.jpg" alt="Avatar Ximenita" class="avatar">
+                            <address class="author-info" style="font-style: normal;">
+                                <span class="author-name">Ximenita</span>
+                                <time class="post-date">20 Nov</time>
+                            </address>
+                        </header>
+                        <h2 class="post-title"><a href="#">Mi experiencia migrando de Junior a Senior en 3 años 🚀</a></h2>
+                        <ul class="tag-list">
+                            <li><a href="#" class="tag"><span class="tag-prefix">#</span>carrera</a></li>
+                            <li><a href="#" class="tag"><span class="tag-prefix">#</span>motivacion</a></li>
+                        </ul>
+                        <footer class="post-footer">
+                            <div class="footer-left">
+                                <button class="interaction-btn"><span>🦄🙌</span> <span>89 reacciones</span></button>
+                                <button class="interaction-btn">
+                                    <svg class="svg-icon-sm" viewBox="0 0 24 24" role="img" xmlns="http://www.w3.org/2000/svg"><path d="M10.5 5h3a6 6 0 110 12v2.625c-3.75-1.5-9-3.75-9-8.625a6 6 0 016-6zM12 15.5h1.5a4.501 4.501 0 001.722-8.657A4.5 4.5 0 0013.5 6.5h-3A4.5 4.5 0 006 11c0 2.707 1.846 4.475 6 6.36V15.5z"></path></svg>
+                                    <span>45 comentarios</span>
+                                </button>
+                            </div>
+                            <div class="footer-right">
+                                <span>6 min de lectura</span>
+                                <button class="btn-save-icon">
+                                    <svg class="svg-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.75 4.5h10.5a.75.75 0 01.75.75v14.357a.375.375 0 01-.575.318L12 16.523l-5.426 3.401A.375.375 0 016 19.607V5.25a.75.75 0 01.75-.75zM16.5 6h-9v11.574l4.5-2.82 4.5 2.82V6z"></path></svg>
+                                </button>
+                            </div>
+                        </footer>
+                    </section>
+                </article>
+
+                <!-- Post 5: Azul -->
+                <article class="post-card">
+                    <img src="https://media2.dev.to/dynamic/image/width=1000,height=420,fit=cover,gravity=auto,format=auto/https%3A%2F%2Fdev-to-uploads.s3.amazonaws.com%2Fuploads%2Farticles%2Ffvzh4gkrcwome913vvc9.jpeg" alt="Cover Python" class="post-cover">
+                    <section class="post-content">
+                        <header class="post-meta">
+                            <img src="https://media2.dev.to/dynamic/image/width=90,height=90,fit=cover,gravity=auto,format=auto/https%3A%2F%2Fdev-to-uploads.s3.amazonaws.com%2Fuploads%2Fuser%2Fprofile_image%2F1971914%2F91ca9e4e-b9c7-47d0-89f8-7cf92bc13268.jpg" alt="Avatar Azul" class="avatar">
+                            <address class="author-info" style="font-style: normal;">
+                                <span class="author-name">Azul</span>
+                                <time class="post-date">19 Nov</time>
+                            </address>
+                        </header>
+                        <h2 class="post-title"><a href="#">Análisis de datos con Python: Pandas vs Polars 🐼🐻‍❄️</a></h2>
+                        <ul class="tag-list">
+                            <li><a href="#" class="tag"><span class="tag-prefix">#</span>python</a></li>
+                            <li><a href="#" class="tag"><span class="tag-prefix">#</span>datascience</a></li>
+                        </ul>
+                        <footer class="post-footer">
+                            <div class="footer-left">
+                                <button class="interaction-btn"><span>🔥🤯</span> <span>56 reacciones</span></button>
+                                <button class="interaction-btn">
+                                    <svg class="svg-icon-sm" viewBox="0 0 24 24" role="img" xmlns="http://www.w3.org/2000/svg"><path d="M10.5 5h3a6 6 0 110 12v2.625c-3.75-1.5-9-3.75-9-8.625a6 6 0 016-6zM12 15.5h1.5a4.501 4.501 0 001.722-8.657A4.5 4.5 0 0013.5 6.5h-3A4.5 4.5 0 006 11c0 2.707 1.846 4.475 6 6.36V15.5z"></path></svg>
+                                    <span>12 comentarios</span>
+                                </button>
+                            </div>
+                            <div class="footer-right">
+                                <span>8 min de lectura</span>
+                                <button class="btn-save-icon">
+                                    <svg class="svg-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.75 4.5h10.5a.75.75 0 01.75.75v14.357a.375.375 0 01-.575.318L12 16.523l-5.426 3.401A.375.375 0 016 19.607V5.25a.75.75 0 01.75-.75zM16.5 6h-9v11.574l4.5-2.82 4.5 2.82V6z"></path></svg>
+                                </button>
+                            </div>
+                        </footer>
+                    </section>
+                </article>
+
+              
+                <article class="post-card">
+                    <section class="post-content">
+                        <header class="post-meta">
+                            <img src="https://media2.dev.to/dynamic/image/width=90,height=90,fit=cover,gravity=auto,format=auto/https%3A%2F%2Fdev-to-uploads.s3.amazonaws.com%2Fuploads%2Fuser%2Fprofile_image%2F1320306%2F6b0be060-094e-46b1-9f23-abf79240a442.png" alt="Avatar William" class="avatar">
+                            <address class="author-info" style="font-style: normal;">
+                                <span class="author-name">William</span>
+                                <time class="post-date">18 Nov</time>
+                            </address>
+                        </header>
+                        <h2 class="post-title"><a href="#">Por qué Rust es el futuro del Backend (Opinión Impopular)</a></h2>
+                        <ul class="tag-list">
+                            <li><a href="#" class="tag"><span class="tag-prefix">#</span>rust</a></li>
+                            <li><a href="#" class="tag"><span class="tag-prefix">#</span>backend</a></li>
+                        </ul>
+                        <footer class="post-footer">
+                            <div class="footer-left">
+                                <button class="interaction-btn"><span>😲🤔</span> <span>230 reacciones</span></button>
+                                <button class="interaction-btn">
+                                    <svg class="svg-icon-sm" viewBox="0 0 24 24" role="img" xmlns="http://www.w3.org/2000/svg"><path d="M10.5 5h3a6 6 0 110 12v2.625c-3.75-1.5-9-3.75-9-8.625a6 6 0 016-6zM12 15.5h1.5a4.501 4.501 0 001.722-8.657A4.5 4.5 0 0013.5 6.5h-3A4.5 4.5 0 006 11c0 2.707 1.846 4.475 6 6.36V15.5z"></path></svg>
+                                    <span>156 comentarios</span>
+                                </button>
+                            </div>
+                            <div class="footer-right">
+                                <span>12 min de lectura</span>
+                                <button class="btn-save-icon">
+                                    <svg class="svg-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.75 4.5h10.5a.75.75 0 01.75.75v14.357a.375.375 0 01-.575.318L12 16.523l-5.426 3.401A.375.375 0 016 19.607V5.25a.75.75 0 01.75-.75zM16.5 6h-9v11.574l4.5-2.82 4.5 2.82V6z"></path></svg>
+                                </button>
+                            </div>
+                        </footer>
+                    </section>
+                </article>
+
+                <!-- Post 7: Hector -->
+                <article class="post-card">
+                    <img src="https://media2.dev.to/dynamic/image/width=1000,height=420,fit=cover,gravity=auto,format=auto/https%3A%2F%2Fdev-to-uploads.s3.amazonaws.com%2Fuploads%2Farticles%2Fucqfwliw127nhqujzmdj.png" alt="Cover DevOps" class="post-cover">
+                    <section class="post-content">
+                        <header class="post-meta">
+                            <img src="https://media2.dev.to/dynamic/image/width=90,height=90,fit=cover,gravity=auto,format=auto/https%3A%2F%2Fdev-to-uploads.s3.amazonaws.com%2Fuploads%2Fuser%2Fprofile_image%2F1403545%2F61f1e35c-72dd-4187-a25d-85ee2db0141c.jpeg" alt="Avatar Hector" class="avatar">
+                            <address class="author-info" style="font-style: normal;">
+                                <span class="author-name">Hector</span>
+                                <time class="post-date">17 Nov</time>
+                            </address>
+                        </header>
+                        <h2 class="post-title"><a href="#">Automatiza tus despliegues con GitHub Actions y Docker 🐳</a></h2>
+                        <ul class="tag-list">
+                            <li><a href="#" class="tag"><span class="tag-prefix">#</span>devops</a></li>
+                            <li><a href="#" class="tag"><span class="tag-prefix">#</span>docker</a></li>
+                        </ul>
+                        <footer class="post-footer">
+                            <div class="footer-left">
+                                <button class="interaction-btn"><span>❤️🔥</span> <span>67 reacciones</span></button>
+                                <button class="interaction-btn">
+                                    <svg class="svg-icon-sm" viewBox="0 0 24 24" role="img" xmlns="http://www.w3.org/2000/svg"><path d="M10.5 5h3a6 6 0 110 12v2.625c-3.75-1.5-9-3.75-9-8.625a6 6 0 016-6zM12 15.5h1.5a4.501 4.501 0 001.722-8.657A4.5 4.5 0 0013.5 6.5h-3A4.5 4.5 0 006 11c0 2.707 1.846 4.475 6 6.36V15.5z"></path></svg>
+                                    <span>8 comentarios</span>
+                                </button>
+                            </div>
+                            <div class="footer-right">
+                                <span>9 min de lectura</span>
+                                <button class="btn-save-icon">
+                                    <svg class="svg-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.75 4.5h10.5a.75.75 0 01.75.75v14.357a.375.375 0 01-.575.318L12 16.523l-5.426 3.401A.375.375 0 016 19.607V5.25a.75.75 0 01.75-.75zM16.5 6h-9v11.574l4.5-2.82 4.5 2.82V6z"></path></svg>
+                                </button>
+                            </div>
+                        </footer>
+                    </section>
+                </article>
+
+            </section>
+
+                        <aside class="right-sidebar">
+                                <!-- Noticias / Billboard reemplazando 'Qué está pasando' -->
+                                <section class="crayons-card crayons-card--secondary crayons-layout__content">
+          <header class="crayons-card__header">
+            <h3 class="crayons-subtitle-2"><a href="/t/discuss" class="crayons-link">#discuss</a></h3>
+            <div class="fs-xs color-base-70">
+              Discussion threads targeting the whole community
+            </div>
+          </header>
+                
+
+<a class="crayons-link crayons-link--contentful" href="https://dev.to/ben/meme-monday-4jn7">
+    Meme Monday
+        <div class="crayons-link__secondary">
+                60 comments
+        </div>
+</a>
+
+
+<a class="crayons-link crayons-link--contentful" href="https://dev.to/notadevbuthere/whats-a-tool-youve-built-just-for-yourself-im-curious-pnc">
+    What’s a Tool You’ve Built Just for Yourself? (I’m Curious.)
+        <div class="crayons-link__secondary">
+                18 comments
+        </div>
+</a>
+
+
+<a class="crayons-link crayons-link--contentful" href="https://dev.to/sylwia-lask/5-myths-about-legacy-code-you-should-stop-believing-pi3">
+    5 Myths About Legacy Code You Should Stop Believing
+        <div class="crayons-link__secondary">
+                18 comments
+        </div>
+</a>
+
+
+<a class="crayons-link crayons-link--contentful" href="https://dev.to/gnomeman4201/has-anyone-else-seen-a-suspicious-follower-spike-recently-4401">
+    Has Anyone Else Seen a Suspicious Follower Spike Recently?
+        <div class="crayons-link__secondary">
+                15 comments
+        </div>
+</a>
+
+
+<a class="crayons-link crayons-link--contentful" href="https://dev.to/ben/cloudflare-down-dev-still-up-2g86">
+    Cloudflare down DEV still up ⬆️
+        <div class="crayons-link__secondary">
+                13 comments
+        </div>
+</a>
+        </section>
+
+        </main>
+        
+        <footer style="text-align: center; padding: 2rem; background-color: #e5e5e5; margin-top: 2rem;">
+            <p><a href="#" style="color: var(--color-brand); font-weight: bold;">DEV Community</a> — Un espacio para programadores.</p>
+        </footer>
+    </section>
+
+    <script>
+        const items = document.querySelectorAll('.community-item');
+        let currentPopup = null;
+
+        items.forEach(item => {
+            const link = item.querySelector('.community-link');
+            const popup = item.querySelector('.community-popup');
+
+            if (link && popup) {
+                item.addEventListener('mouseenter', () => {
+                    if (currentPopup && currentPopup !== popup) {
+                        currentPopup.style.display = 'none';
+                    }
+                    const rect = item.getBoundingClientRect();
+                    const popupHeight = 280;
+                    let top = rect.top;
+                    if (top + popupHeight > window.innerHeight) {
+                        top = window.innerHeight - popupHeight - 20;
+                    }
+                    if (top < 60) top = 60;
+                    popup.style.top = `${top}px`;
+                    popup.style.display = 'block';
+                    currentPopup = popup;
+                });
+
+                item.addEventListener('mouseleave', () => {
+                    popup.style.display = 'none';
+                    currentPopup = null;
+                });
+            }
+        });
+
+        const saveButtons = document.querySelectorAll('.btn-save-icon');
+        saveButtons.forEach(btn => {
+            btn.addEventListener('click', function() {
+                this.classList.toggle('saved');
+                const path = this.querySelector('path');
+                if (this.classList.contains('saved')) {
+                    path.setAttribute('d', 'M6.75 4.5h10.5a.75.75 0 01.75.75v14.357a.375.375 0 01-.575.318L12 16.523l-5.426 3.401A.375.375 0 016 19.607V5.25a.75.75 0 01.75-.75z'); 
+                } else {
+                    path.setAttribute('d', 'M6.75 4.5h10.5a.75.75 0 01.75.75v14.357a.375.375 0 01-.575.318L12 16.523l-5.426 3.401A.375.375 0 016 19.607V5.25a.75.75 0 01.75-.75zM16.5 6h-9v11.574l4.5-2.82 4.5 2.82V6z');
+                }
+            });
+        });
+
+        // Mostrar más / Mostrar menos para 'Etiquetas populares' (sin slider)
+        (function(){
+            const tagsContainer = document.getElementById('sidebar-nav-default-tags');
+            if (!tagsContainer) return;
+
+            const defaultVisible = 5;
+            const first = tagsContainer.querySelector('.sidebar-nav-element');
+            const itemHeight = first ? Math.ceil(first.getBoundingClientRect().height) : 36;
+
+            // Inicialmente colapsado mostrando solo 5
+            tagsContainer.style.maxHeight = (itemHeight * defaultVisible) + 'px';
+            tagsContainer.classList.add('collapsed');
+
+            // Crear botón toggle y colocarlo después del contenedor
+            const toggle = document.createElement('button');
+            toggle.className = 'btn btn-ghost';
+            toggle.textContent = 'Mostrar más';
+            toggle.style.marginTop = '8px';
+            tagsContainer.parentElement.insertBefore(toggle, tagsContainer.nextSibling);
+
+            let expanded = false;
+            toggle.addEventListener('click', () => {
+                expanded = !expanded;
+                if (expanded) {
+                    tagsContainer.style.maxHeight = '';
+                    tagsContainer.classList.remove('collapsed');
+                    toggle.textContent = 'Mostrar menos';
+                } else {
+                    tagsContainer.style.maxHeight = (itemHeight * defaultVisible) + 'px';
+                    tagsContainer.classList.add('collapsed');
+                    toggle.textContent = 'Mostrar más';
+                    // ensure scrolled to top when collapsed
+                    tagsContainer.scrollTop = 0;
+                }
+            });
+
+            // Si el contenido no excede, ocultamos el botón
+            function updateToggleVisibility(){
+                const needCollapse = tagsContainer.scrollHeight > tagsContainer.clientHeight + 1;
+                toggle.style.display = needCollapse ? 'inline-block' : 'none';
+            }
+
+            setTimeout(updateToggleVisibility, 50);
+            window.addEventListener('resize', updateToggleVisibility);
+        })();
+
+        // Slider para nav-sidebar (controla el scroll del menú lateral)
+        (function(){
+            const navSidebar = document.querySelector('.nav-sidebar');
+            const navSlider = document.getElementById('nav-scroll-range');
+            if (!navSidebar || !navSlider) return;
+
+            function updateSlider() {
+                const max = Math.max(0, Math.round(navSidebar.scrollHeight - navSidebar.clientHeight));
+                navSlider.max = max;
+                navSlider.value = Math.round(navSidebar.scrollTop || 0);
+                // hide slider if not needed
+                if (max === 0) {
+                    navSlider.parentElement.style.display = 'none';
+                } else {
+                    navSlider.parentElement.style.display = 'flex';
+                }
+            }
+
+            // Sync scroll -> slider
+            navSidebar.addEventListener('scroll', () => {
+                navSlider.value = Math.round(navSidebar.scrollTop);
+            });
+
+            // Sync slider -> scroll
+            navSlider.addEventListener('input', (e) => {
+                navSidebar.scrollTop = Number(e.target.value);
+            });
+
+            // Init and recalc on resize/content changes
+            setTimeout(updateSlider, 50);
+            window.addEventListener('resize', updateSlider);
+
+            // Observe mutations that might change height
+            const ro = new ResizeObserver(updateSlider);
+            ro.observe(navSidebar);
+        })();
+
+        // Feed sorting: Relevante / Más reciente / Top
+        (function(){
+            const feed = document.querySelector('.feed');
+            if (!feed) return;
+            const filters = Array.from(document.querySelectorAll('.feed-filter'));
+
+            function parseNumberFromText(text){
+                const m = text && text.match(/(\d+[\d,\.]*)/);
+                if (!m) return 0;
+                return Number(m[1].replace(/[,\.]/g,''));
+            }
+
+            function parsePostData(post){
+                const reactionsBtn = post.querySelector('.footer-left .interaction-btn');
+                const reactions = reactionsBtn ? parseNumberFromText(reactionsBtn.textContent) : 0;
+                const commentBtn = post.querySelectorAll('.footer-left .interaction-btn')[1];
+                const comments = commentBtn ? parseNumberFromText(commentBtn.textContent) : 0;
+                const dateEl = post.querySelector('.post-date');
+                let date = null;
+                if (dateEl) {
+                    // Try to parse day and month from visible text (e.g. '19 Nov' or '20 Nov')
+                    const txt = dateEl.textContent.trim();
+                    // Append current year to help Date parse
+                    const year = new Date().getFullYear();
+                    const parsed = Date.parse(txt + ' ' + year);
+                    if (!isNaN(parsed)) date = new Date(parsed);
+                }
+                // fallback: use DOM position timestamp
+                return { post, reactions, comments, date };
+            }
+
+            function ageDays(date){
+                if (!date) return 0;
+                const ms = Date.now() - date.getTime();
+                return Math.floor(ms / (1000*60*60*24));
+            }
+
+            function sortAndRender(mode){
+                const items = Array.from(feed.querySelectorAll('.post-card'));
+                const full = items.map(i => parsePostData(i));
+
+                full.sort((a,b) => {
+                    if (mode === 'latest'){
+                        const ta = a.date ? a.date.getTime() : 0;
+                        const tb = b.date ? b.date.getTime() : 0;
+                        return tb - ta;
+                    }
+                    if (mode === 'top'){
+                        const sa = a.reactions + 0.5 * a.comments;
+                        const sb = b.reactions + 0.5 * b.comments;
+                        return sb - sa;
+                    }
+                    // relevance
+                    const ra = a.reactions*2 + a.comments - ageDays(a.date)*3;
+                    const rb = b.reactions*2 + b.comments - ageDays(b.date)*3;
+                    return rb - ra;
+                });
+
+                // append in sorted order
+                const container = feed;
+                full.forEach(item => container.appendChild(item.post));
+            }
+
+            // attach listeners
+            filters.forEach(f => {
+                f.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    filters.forEach(x => x.classList.remove('active'));
+                    f.classList.add('active');
+                    const text = f.textContent.trim().toLowerCase();
+                    if (text.includes('relev')) sortAndRender('relevance');
+                    else if (text.includes('recien') || text.includes('últ') || text.includes('más reciente') || text.includes('reciente')) sortAndRender('latest');
+                    else if (text.includes('top')) sortAndRender('top');
+                    else sortAndRender('relevance');
+                });
+            });
+
+            // initial sort: Relevante
+            sortAndRender('relevance');
+        })();
+    </script>
+
+</body>
+</html>
