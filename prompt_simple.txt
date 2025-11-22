@@ -1,0 +1,20 @@
+=== PROMPT OPTIMIZADO / OPTIMIZED PROMPT ===
+
+[ESPAÑOL]
+Fotografía profesional de una mujer joven sosteniendo una bocina cerca de su cuerpo, completamente feliz con sonrisa auténtica y natural que ilumina sus ojos, misma persona que en imagen de referencia, misma ropa y vestimenta, misma posición corporal y pose, expresión espontánea y genuina, iluminación suave y natural, alta calidad fotográfica, retrato realista, tonos cálidos
+
+Negative: borroso, baja calidad, persona diferente, ropa diferente, sonrisa artificial, expresión forzada, triste, serio
+
+---
+
+[ENGLISH]
+Professional photograph of a young woman holding a speaker close to her body, completely happy with authentic natural smile that lights up her eyes, same person as reference image, same clothes and outfit, same body position and pose, spontaneous genuine expression, soft natural lighting, high photographic quality, realistic portrait, warm tones
+
+Negative: blurry, low quality, different person, different clothes, artificial smile, forced expression, sad, serious
+
+---
+
+[VERSIÓN ULTRA CORTA / ULTRA SHORT VERSION]
+Mujer joven feliz sosteniendo bocina, sonrisa natural auténtica, misma persona, misma ropa, misma pose, fotografía profesional realista
+
+Young woman happily holding speaker, authentic natural smile, same person, same clothes, same pose, professional realistic photography
